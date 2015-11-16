@@ -1,1 +1,60 @@
+database:
+  override:
+    - mysql -u ubuntu circle_test < my-database-setup.sql
+    test:
+  override:
+    - php ./test-suite/run.php --unit-tests
+    test:
+  override:
+    - php ./app/run-server.php --daemon
+    - php ./test-suite/run.php --unit-test
+    dependencies:
+  override:
+    - bundle install:
+        timeout: 240
+        environment:
+          foo: bar
+          foo2: bar2
+        pwd:
+          test_dir
+    machine:
+  timezone:
+    America/Los_Angeles
+  ruby:
+    version: 1.9.3-p0-falcon
 
+test:
+  post:
+    - bundle exec rake custom:test:suite
+machine:
+  pre:
+    - curl -k -L -o phantomjs.tar.bz2 http://phantomjs.googlecode.com/files/phantomjs-1.8.2-linux-x86_64.tar.bz2
+    - tar -jxf phantomjs.tar.bz2
+    machine:
+  environment:
+    foo: bar
+    baz: 123
+    machine:
+  hosts:
+    dev.circleci.com: 127.0.0.1
+    foobar: 1.2.3.4
+    machine:
+  java:
+    version: openjdk7
+    machine:
+  services:
+    - cassandra
+    - elasticsearch
+    - rabbitmq-server
+    - riak
+    - beanstalkd
+    - couchbase-server
+    - neo4j
+    - sphinxsearch
+    checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init
+    checkout:
+  post:
+    - mv config/.app.yml config/app.yml
